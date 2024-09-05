@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlacementSystem : MonoBehaviour
@@ -19,7 +20,14 @@ public class PlacementSystem : MonoBehaviour
 
     [SerializeField] 
     private PreviewSystem preview;
+
+    [SerializeField] 
+    private MoneyManager moneyManager;
     public Vector3Int lastDetectedPosition = Vector3Int.zero;
+
+    private int temp;
+    
+    
     
     IBuildingState buildingState;
 
@@ -28,18 +36,50 @@ public class PlacementSystem : MonoBehaviour
         StopPlacement();
         floorData = new();
         furnitureData = new();
+        
 
     }
 
     public void StartPlacement(int ID)
     {
-        preview.StopShowingPreview();
-        gridVisualization.SetActive(true);
+        Debug.Log($"{ID}");
+        int money = moneyManager.money;
+        if (money - this.database.objectsData[ID].Price < 0)
+        {
+            Debug.Log("not enough money");
+        }
+        else
+        {
+            preview.StopShowingPreview();
+            gridVisualization.SetActive(true);
+
+            temp = ID;
         
-        buildingState = new PlacementState(ID, grid, preview, database, floorData, furnitureData, objectPlacer); 
+            buildingState = new PlacementState(ID, grid, preview, database, floorData, furnitureData, objectPlacer); 
+            /*
+            inputManager.OnClicked += PlaceStructure;
+            moneyManager.MinusMoney(database.objectsData[ID].Price);
+            
+            inputManager.OnExit += StopPlacement;
+            */
+            // 订阅 OnClicked 事件
+            inputManager.OnClicked += OnFirstClick;
+            // 订阅 OnExit 事件
+            inputManager.OnExit += StopPlacement;
+        }
         
-        inputManager.OnClicked += PlaceStructure;
-        inputManager.OnExit += StopPlacement;
+    }
+
+    private void OnFirstClick()
+    {
+        PlaceStructure();
+        
+        if (buildingState is PlacementState placementState)
+        {
+            moneyManager.MinusMoney(database.objectsData[temp].Price);
+        }
+        
+        StopPlacement();
     }
 
     public void StartRemoving()
@@ -62,14 +102,7 @@ public class PlacementSystem : MonoBehaviour
         
         buildingState.OnAction(gridPosition);
     }
-/*
-    private bool CheckPlamentValidity(Vector3Int gridPosition, int selectedObjectIndex)
-    {
-        GridData selectedData = database.objectsData[selectedObjectIndex].ID == 0?
-                floorData : furnitureData;
-        return selectedData.CanPlaceObjectAt(gridPosition, database.objectsData[selectedObjectIndex].Size);
-    }
-    */
+
     
     private void StopPlacement()
     {

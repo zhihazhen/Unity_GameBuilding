@@ -29,6 +29,8 @@ public class RemovingState : IBuildingState
         previewSystem.StartShowingPlacementPreview();
     }
 
+    public int id { get; }
+
     public void EndState()
     {
         previewSystem.StopShowingPreview();

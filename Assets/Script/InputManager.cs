@@ -17,6 +17,8 @@ public class InputManager : MonoBehaviour
 
     public event Action OnClicked, OnExit;
 
+
+
     public void Update()
     {
         if (Input.GetMouseButtonDown(0))

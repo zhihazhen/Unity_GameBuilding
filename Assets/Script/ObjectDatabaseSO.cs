@@ -6,17 +6,6 @@ using UnityEngine;
 [CreateAssetMenu]
 public class ObjectDatabaseSO : ScriptableObject
 {
-    /*// Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }*/
     public List<ObjectData> objectsData;
 }
 [Serializable]
@@ -39,5 +28,7 @@ public class ObjectData
     [field: SerializeField] public Vector2Int Size { get; private set; } = Vector2Int.one;
     [field: SerializeField]
     public GameObject Prefab { get; private set; }
+    [field: SerializeField]
+    public int Price { get; private set; }
 
 }

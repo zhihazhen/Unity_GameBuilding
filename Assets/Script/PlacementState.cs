@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public interface IBuildingState
 {
+    int id{get;}
     void EndState();
     void OnAction(Vector3Int gridPosition);
     void UpdateState(Vector3Int gridPosition);
@@ -12,6 +14,7 @@ public interface IBuildingState
 public class PlacementState : IBuildingState
 {
     private int selectedObjectIndex = -1;
+    
     int ID;
     Grid grid;
     PreviewSystem previewSystem;
@@ -45,6 +48,8 @@ public class PlacementState : IBuildingState
         }else
             throw new System.Exception($"No object with ID {id}");
     }
+
+    public int id { get; }
 
     public void EndState()
     {
