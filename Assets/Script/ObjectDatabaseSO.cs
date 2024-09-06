@@ -30,5 +30,7 @@ public class ObjectData
     public GameObject Prefab { get; private set; }
     [field: SerializeField]
     public int Price { get; private set; }
+    [field: SerializeField]
+    public int Resource { get; private set; }
 
 }

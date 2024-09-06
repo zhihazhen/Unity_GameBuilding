@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlacementSystem : MonoBehaviour
 {
@@ -20,12 +21,17 @@ public class PlacementSystem : MonoBehaviour
 
     [SerializeField] 
     private PreviewSystem preview;
-
-    [SerializeField] 
-    private MoneyManager moneyManager;
+    
+    [SerializeField]
+    private PlayerManager playerManager;
+    
     public Vector3Int lastDetectedPosition = Vector3Int.zero;
+    
+    [SerializeField]
+    private TMP_Text promptText;
+    
 
-    private int temp;
+    private int tempId;
     
     
     
@@ -36,26 +42,39 @@ public class PlacementSystem : MonoBehaviour
         StopPlacement();
         floorData = new();
         furnitureData = new();
+        promptText.text = "";
         
 
     }
 
     public void StartPlacement(int ID)
     {
-        Debug.Log($"{ID}");
-        int money = moneyManager.money;
-        if (money - this.database.objectsData[ID].Price < 0)
+        int money = playerManager.money;
+        int resource = playerManager.resource;
+        if (money - database.objectsData[ID].Price < 0 && resource - database.objectsData[ID].Resource < 0)
         {
-            Debug.Log("not enough money");
+            promptText.text = "You do not have enough money and resource to place.";
+            ClearChangedTextAfterDelay();
+        }
+        else if (resource - database.objectsData[ID].Resource < 0)
+        {
+            promptText.text = "You do not have enough resource to place.";
+            ClearChangedTextAfterDelay();
+        }else if(money - database.objectsData[ID].Price < 0)
+        {
+            promptText.text = "You do not have enough money to place.";
+            ClearChangedTextAfterDelay();
         }
         else
         {
             preview.StopShowingPreview();
             gridVisualization.SetActive(true);
+            
 
-            temp = ID;
+            tempId = ID;
         
             buildingState = new PlacementState(ID, grid, preview, database, floorData, furnitureData, objectPlacer); 
+            playerManager.PreviewMinusMoneyValue(database.objectsData[tempId].Resource, database.objectsData[tempId].Price);
             /*
             inputManager.OnClicked += PlaceStructure;
             moneyManager.MinusMoney(database.objectsData[ID].Price);
@@ -73,12 +92,6 @@ public class PlacementSystem : MonoBehaviour
     private void OnFirstClick()
     {
         PlaceStructure();
-        
-        if (buildingState is PlacementState placementState)
-        {
-            moneyManager.MinusMoney(database.objectsData[temp].Price);
-        }
-        
         StopPlacement();
     }
 
@@ -101,6 +114,10 @@ public class PlacementSystem : MonoBehaviour
         Vector3Int gridPosition = grid.WorldToCell(mousePosition);
         
         buildingState.OnAction(gridPosition);
+        if (buildingState is PlacementState placementState)
+        {
+            playerManager.MinusMoneyResource(database.objectsData[tempId].Resource,database.objectsData[tempId].Price);
+        }
     }
 
     
@@ -134,6 +151,12 @@ public class PlacementSystem : MonoBehaviour
             lastDetectedPosition = gridPosition;
         }
 
+    }
+    
+    private IEnumerator ClearChangedTextAfterDelay()
+    {
+        yield return new WaitForSeconds(1f); // 延迟一秒
+        promptText.text = ""; // 将文本设置为空
     }
 
 }
